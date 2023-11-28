@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:test_target_sistemas/components/auth_form.dart';
+import 'package:test_target_sistemas/services/auth/mock_auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
-
+  HomeView({super.key});
+  final userController = TextEditingController();
+  final passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
     return Container(
+        //Gradient BackGround
         decoration: const BoxDecoration(
             gradient: LinearGradient(
           colors: [Color(0xFF1E4E62), Color(0xFF2D958E)],
@@ -18,14 +20,24 @@ class HomeView extends StatelessWidget {
         )),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: Column(
+          body:
+              // Home View Elements
+              Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 100),
-              const Center(child: AuthForm()),
+              Center(
+                child: AuthForm(
+                    user: userController, password: passwordController),
+              ),
               const SizedBox(height: 30),
+              // 'Entrar' Button
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  final user = userController.text;
+                  final password = passwordController.text;
+                  MockAuthProvider authProvider = MockAuthProvider();
+                  await authProvider.logIn(context, user, password);},
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30)),
@@ -40,9 +52,10 @@ class HomeView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 100),
+              // 'Política de Privacidade' Button
               TextButton(
                   onPressed: () {
-                    _launchInBrowser(Uri.parse('https://www.google.com.br/'));
+                    launchInBrowser(Uri.parse('https://www.google.com.br/'));
                   },
                   child: const Text(
                     'Política de Privacidade',
@@ -54,7 +67,7 @@ class HomeView extends StatelessWidget {
   }
 }
 
-Future<void> _launchInBrowser(Uri url) async {
+Future<void> launchInBrowser(Uri url) async {
   if (!await launchUrl(
     url,
     mode: LaunchMode.externalApplication,
@@ -62,3 +75,4 @@ Future<void> _launchInBrowser(Uri url) async {
     throw Exception('Could not launch $url');
   }
 }
+

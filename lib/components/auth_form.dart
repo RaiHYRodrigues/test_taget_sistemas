@@ -1,9 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class AuthForm extends StatelessWidget {
-  const AuthForm({super.key});
+class AuthForm extends StatefulWidget {
+  final TextEditingController user;
+  final TextEditingController password;
+  const AuthForm({
+    Key? key,
+    required this.user,
+    required this.password,
+  }) : super(key: key);
 
+  @override
+  State<AuthForm> createState() => _AuthFormState();
+}
+
+class _AuthFormState extends State<AuthForm> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -11,7 +23,9 @@ class AuthForm extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Padding(
           padding: EdgeInsets.all(4.0),
-          child: Text(
+          child:
+              //Username Text field
+              Text(
             'Usuário',
             style: TextStyle(
               color: Colors.white,
@@ -20,12 +34,10 @@ class AuthForm extends StatelessWidget {
           ),
         ),
         TextField(
-          inputFormatters: [
-              FilteringTextInputFormatter.deny(RegExp(r'\s+$')),
-            ],
+            controller: widget.user,
             maxLength: 20,
             cursorColor: Colors.black,
-            style:const  TextStyle(
+            style: const TextStyle(
               fontSize: 16,
             ),
             decoration: const InputDecoration(
@@ -47,7 +59,9 @@ class AuthForm extends StatelessWidget {
         ),
         const Padding(
           padding: EdgeInsets.all(4.0),
-          child: Text(
+          child:
+              //Password TextField
+              Text(
             'Senha',
             style: TextStyle(
               color: Colors.white,
@@ -56,8 +70,9 @@ class AuthForm extends StatelessWidget {
           ),
         ),
         TextField(
+            controller: widget.password,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-Z0-9]+$')),
+              FilteringTextInputFormatter.deny(RegExp(r'[^a-zA-Z0-9]')),
             ],
             maxLength: 20,
             obscureText: true,
