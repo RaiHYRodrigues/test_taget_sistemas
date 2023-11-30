@@ -37,7 +37,8 @@ class HomeView extends StatelessWidget {
                   final user = userController.text;
                   final password = passwordController.text;
                   MockAuthProvider authProvider = MockAuthProvider();
-                  await authProvider.logIn(context, user, password);},
+                  await authProvider.logIn(context, user, password);
+                },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30)),
@@ -47,7 +48,7 @@ class HomeView extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   child: Text(
                     'Entrar',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),
@@ -75,4 +76,3 @@ Future<void> launchInBrowser(Uri url) async {
     throw Exception('Could not launch $url');
   }
 }
-

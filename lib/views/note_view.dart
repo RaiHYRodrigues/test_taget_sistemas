@@ -22,10 +22,10 @@ class NoteView extends StatelessWidget {
               Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                height: 200,
-              ),
+
+              Container(height: 200,),
               const SizedBox(height: 100),
+              
               TextButton(
                   onPressed: () {
                     launchInBrowser(Uri.parse('https://www.google.com.br/'));
