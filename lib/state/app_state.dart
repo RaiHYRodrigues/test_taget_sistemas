@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:test_target_sistemas/state/note.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_target_sistemas/services/mock_auth_provider.dart';
+import 'package:test_target_sistemas/state/notes.dart';
 
 part 'app_state.g.dart';
 
@@ -15,35 +20,93 @@ abstract class _AppState with Store {
   @observable
   bool isLoading = false;
 
-  @observable
-  ObservableList<Note> notes = ObservableList<Note>();
-
-  @computed
-  ObservableList<Note> get sortedNotes => ObservableList.of(notes.sorted());
+  
 
   @action
-  void goTo(AppScreen screen) {
-    currentScreen = screen;
-  }
-
-  @action
-  Future<bool> delete(Note note) async {
+  Future<void> initialize() async {
     isLoading = true;
-    notes.removeWhere((element) => element.id == note.id);
-    isLoading = false;
-    return true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool checkLogin = prefs.getBool('isLogged') ?? false;
+    if (checkLogin == false) {
+      currentScreen = AppScreen.home;
+      isLoading = false;
+    } else {
+      currentScreen = AppScreen.note;
+      isLoading = false;
+      isLogged = true;
+      
+    }
   }
-}
 
-abstract class _DocumentKeys {
-  static const text = 'text';
-  static const creationDate = 'creation_date';
-}
+   
+  @action
+  Future<void> logIn(
+    BuildContext context,
+    String user,
+    String password,
+  ) async {
+    isLoading = true;
+    MockAuthProvider authProvider = MockAuthProvider();
+    await authProvider.logIn(context, user, password);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLogged', true);
+    isLogged = true;
+    isLoading = false;
+  }
 
-extension Sorted on List<Note> {
-  List<Note> sorted() => [...this]..sort((top, bot) {
-      return top.creationDate.compareTo(bot.creationDate);
-    });
+  @action
+  Future<void> createNotes(String text) async {
+    isLoading = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var notes = prefs.getString('notes');
+
+    if (notes == null) {
+      var notesJson = [
+        {'id': 1, 'text': text}
+      ];
+      await prefs.setString('notes', jsonEncode(notesJson));
+    } else {
+      var notesJson = jsonDecode(notes);
+      int id = notesJson.length + 1;
+      notesJson.add({'id': id, 'text': text});
+      await prefs.setString('notes', jsonEncode(notesJson));
+    }
+  }
+
+  @action
+  Future<void> editNote(int id, String newText) async {
+    isLoading = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var notes = prefs.getString('notes');
+
+    if (notes != null) {
+      var notesJson = jsonDecode(notes);
+
+      int indexToEdit = notesJson.indexWhere((element) => element['id'] == id);
+
+      notesJson[indexToEdit]['text'] = newText;
+
+      await prefs.setString('notes', jsonEncode(notesJson));
+    }
+
+    isLoading = false;
+  }
+
+  @action
+  Future<void> deleteNote(int id) async {
+    isLoading = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var notes = prefs.getString('notes');
+    if (notes != null) {
+      var notesJson = jsonDecode(notes);
+      int indexToDelete =
+          notesJson.indexWhere((element) => element['id'] == id);
+      notesJson.removeAt(indexToDelete);
+      await prefs.setString('notes', jsonEncode(notesJson));
+    }
+    isLoading = false;
+  }
 }
 
 enum AppScreen { home, note }
+

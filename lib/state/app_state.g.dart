@@ -9,14 +9,6 @@ part of 'app_state.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$AppState on _AppState, Store {
-  Computed<ObservableList<Note>>? _$sortedNotesComputed;
-
-  @override
-  ObservableList<Note> get sortedNotes => (_$sortedNotesComputed ??=
-          Computed<ObservableList<Note>>(() => super.sortedNotes,
-              name: '_AppState.sortedNotes'))
-      .value;
-
   late final _$currentScreenAtom =
       Atom(name: '_AppState.currentScreen', context: context);
 
@@ -65,41 +57,44 @@ mixin _$AppState on _AppState, Store {
     });
   }
 
-  late final _$notesAtom = Atom(name: '_AppState.notes', context: context);
+  late final _$initializeAsyncAction =
+      AsyncAction('_AppState.initialize', context: context);
 
   @override
-  ObservableList<Note> get notes {
-    _$notesAtom.reportRead();
-    return super.notes;
+  Future<void> initialize() {
+    return _$initializeAsyncAction.run(() => super.initialize());
   }
 
+  late final _$logInAsyncAction =
+      AsyncAction('_AppState.logIn', context: context);
+
   @override
-  set notes(ObservableList<Note> value) {
-    _$notesAtom.reportWrite(value, super.notes, () {
-      super.notes = value;
-    });
+  Future<void> logIn(BuildContext context, String user, String password) {
+    return _$logInAsyncAction.run(() => super.logIn(context, user, password));
   }
 
-  late final _$deleteAsyncAction =
-      AsyncAction('_AppState.delete', context: context);
+  late final _$createNotesAsyncAction =
+      AsyncAction('_AppState.createNotes', context: context);
 
   @override
-  Future<bool> delete(Note note) {
-    return _$deleteAsyncAction.run(() => super.delete(note));
+  Future<void> createNotes(String text) {
+    return _$createNotesAsyncAction.run(() => super.createNotes(text));
   }
 
-  late final _$_AppStateActionController =
-      ActionController(name: '_AppState', context: context);
+  late final _$editNoteAsyncAction =
+      AsyncAction('_AppState.editNote', context: context);
 
   @override
-  void goTo(AppScreen screen) {
-    final _$actionInfo =
-        _$_AppStateActionController.startAction(name: '_AppState.goTo');
-    try {
-      return super.goTo(screen);
-    } finally {
-      _$_AppStateActionController.endAction(_$actionInfo);
-    }
+  Future<void> editNote(int id, String newText) {
+    return _$editNoteAsyncAction.run(() => super.editNote(id, newText));
+  }
+
+  late final _$deleteNoteAsyncAction =
+      AsyncAction('_AppState.deleteNote', context: context);
+
+  @override
+  Future<void> deleteNote(int id) {
+    return _$deleteNoteAsyncAction.run(() => super.deleteNote(id));
   }
 
   @override
@@ -107,9 +102,7 @@ mixin _$AppState on _AppState, Store {
     return '''
 currentScreen: ${currentScreen},
 isLogged: ${isLogged},
-isLoading: ${isLoading},
-notes: ${notes},
-sortedNotes: ${sortedNotes}
+isLoading: ${isLoading}
     ''';
   }
 }

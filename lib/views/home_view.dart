@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:test_target_sistemas/components/auth_form.dart';
-import 'package:test_target_sistemas/services/auth/mock_auth_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:test_target_sistemas/services/mock_auth_provider.dart';
+import 'package:test_target_sistemas/state/app_state.dart';
+import 'package:test_target_sistemas/utilities.dart';
 
 class HomeView extends StatelessWidget {
   HomeView({super.key});
@@ -36,8 +38,13 @@ class HomeView extends StatelessWidget {
                 onPressed: () async {
                   final user = userController.text;
                   final password = passwordController.text;
-                  MockAuthProvider authProvider = MockAuthProvider();
-                  await authProvider.logIn(context, user, password);
+                  
+                  context.read<AppState>().logIn(
+                        context,
+                        user,
+                        password,
+                        
+                      );
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -68,11 +75,4 @@ class HomeView extends StatelessWidget {
   }
 }
 
-Future<void> launchInBrowser(Uri url) async {
-  if (!await launchUrl(
-    url,
-    mode: LaunchMode.externalApplication,
-  )) {
-    throw Exception('Could not launch $url');
-  }
-}
+

@@ -7,18 +7,17 @@ class MockAuthProvider {
     String password,
   ) async {
     if (user.isEmpty || password.isEmpty) {
-      return _showErrorDialog(context, 'Usuário ou Senha não está Preenchido');
+      return _authErrorDialog(context, 'Usuário ou Senha não está Preenchido');
     } else if (user.endsWith(' ')) {
-      return _showErrorDialog(context, "Usuário não pode terminar com espaço");
+      return _authErrorDialog(context, "Usuário não pode terminar com espaço");
     } else if (password.length < 2) {
-      return _showErrorDialog(context, 'Senha deve ter no mínimo 2 caracteres');
+      return _authErrorDialog(context, 'Senha deve ter no mínimo 2 caracteres');
     } else {
       Future.delayed(const Duration(seconds: 1));
-      Navigator.pushReplacementNamed(context, '/note');
     }
   }
 
-  Future<void> _showErrorDialog(
+  Future<void> _authErrorDialog(
     BuildContext context,
     String text,
   ) {
