@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:test_target_sistemas/components/auth_form.dart';
-import 'package:test_target_sistemas/services/mock_auth_provider.dart';
+
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 
@@ -40,10 +40,9 @@ class HomeView extends StatelessWidget {
                   final password = passwordController.text;
                   
                   context.read<AppState>().logIn(
-                        context,
+                        context, 
                         user,
                         password,
-                        
                       );
                 },
                 style: ElevatedButton.styleFrom(

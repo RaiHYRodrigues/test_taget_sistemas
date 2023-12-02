@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first,
-import 'package:flutter/material.dart';
-import 'package:test_target_sistemas/utilities.dart';
 
-import 'home_view.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:test_target_sistemas/state/app_state.dart';
+import 'package:test_target_sistemas/utilities.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 
 class NoteView extends StatelessWidget {
   NoteView({super.key});
@@ -28,42 +30,11 @@ class NoteView extends StatelessWidget {
             backgroundColor: Colors.transparent,
             body:
                 //Note View Elements
-                Center(
+              Center(
               child: Column(
                 children: [
                   const SizedBox(height: 100),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white),
-                    height: 280,
-                    width: 280,
-                    child: Column(children: [
-                      Card(
-                        child: ListTile(
-                            contentPadding: EdgeInsets.only(left: 4, right: 2),
-                            leading: Text('Texto Digitado 1'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                    onPressed: () {},
-                                    child:
-                                        Icon(Icons.edit, color: Colors.black)),
-                                TextButton(
-                                    onPressed: () {
-                                      deleteDialog(context);
-                                    },
-                                    child: Icon(
-                                      Icons.cancel,
-                                      color: Colors.red,
-                                    ))
-                              ],
-                            )),
-                      )
-                    ]),
-                  ),
+                 //List of notes
                   const SizedBox(height: 50),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -105,18 +76,32 @@ class NoteView extends StatelessWidget {
   }
 }
 
-class NoteTile extends StatelessWidget {
-  final int noteIndex;
-
-  const NoteTile({
-    Key? key,
-    required this.noteIndex,
-  }) : super(key: key);
+class NotesList extends StatelessWidget {
+  const NotesList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text('Texto digitado $noteIndex'),
-    );
+    final appState = context.watch<AppState>();
+
+    return Observer(builder: (context){
+      return ListView.builder(
+        itemCount: appState.notesMap.length, 
+        itemBuilder: (context, index) { 
+          final id = appState.notesMap['id'];
+          
+          return ListTile(
+            title: Text('this is the id: ${id.toString()}'),
+            trailing: Row(
+              children: [
+                
+                IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+                IconButton(onPressed: () {}, icon: const Icon(Icons.delete)),
+              ],
+            ),
+          );
+          
+         } ,
+       );
+    });
   }
 }

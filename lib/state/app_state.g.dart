@@ -57,12 +57,36 @@ mixin _$AppState on _AppState, Store {
     });
   }
 
+  late final _$notesMapAtom =
+      Atom(name: '_AppState.notesMap', context: context);
+
+  @override
+  ObservableMap<String, Object> get notesMap {
+    _$notesMapAtom.reportRead();
+    return super.notesMap;
+  }
+
+  @override
+  set notesMap(ObservableMap<String, Object> value) {
+    _$notesMapAtom.reportWrite(value, super.notesMap, () {
+      super.notesMap = value;
+    });
+  }
+
   late final _$initializeAsyncAction =
       AsyncAction('_AppState.initialize', context: context);
 
   @override
   Future<void> initialize() {
     return _$initializeAsyncAction.run(() => super.initialize());
+  }
+
+  late final _$loadNotesAsyncAction =
+      AsyncAction('_AppState.loadNotes', context: context);
+
+  @override
+  Future<ObservableMap<String, Object>> loadNotes() {
+    return _$loadNotesAsyncAction.run(() => super.loadNotes());
   }
 
   late final _$logInAsyncAction =
@@ -102,7 +126,8 @@ mixin _$AppState on _AppState, Store {
     return '''
 currentScreen: ${currentScreen},
 isLogged: ${isLogged},
-isLoading: ${isLoading}
+isLoading: ${isLoading},
+notesMap: ${notesMap}
     ''';
   }
 }

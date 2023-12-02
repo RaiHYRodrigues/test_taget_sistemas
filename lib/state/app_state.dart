@@ -1,10 +1,11 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers, library_private_types_in_public_api
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_target_sistemas/services/mock_auth_provider.dart';
-import 'package:test_target_sistemas/state/notes.dart';
 
 part 'app_state.g.dart';
 
@@ -20,7 +21,8 @@ abstract class _AppState with Store {
   @observable
   bool isLoading = false;
 
-  
+  @observable
+  ObservableMap<String, Object> notesMap =  ObservableMap<String, Object>.of({'id': 0, 'text': ''});
 
   @action
   Future<void> initialize() async {
@@ -34,11 +36,21 @@ abstract class _AppState with Store {
       currentScreen = AppScreen.note;
       isLoading = false;
       isLogged = true;
-      
     }
   }
 
-   
+  @action
+  Future<ObservableMap<String, Object>> loadNotes() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var noteString = prefs.getString('notes');
+    if (noteString != null) {
+      Map<String, Object> notesDecoded = jsonDecode(noteString);
+      return notesMap = ObservableMap<String, Object>.of(notesDecoded);
+    } else {
+      return notesMap = ObservableMap<String, Object>.of({});
+    }
+  }
+
   @action
   Future<void> logIn(
     BuildContext context,
@@ -47,9 +59,9 @@ abstract class _AppState with Store {
   ) async {
     isLoading = true;
     MockAuthProvider authProvider = MockAuthProvider();
-    await authProvider.logIn(context, user, password);
+    authProvider.logIn(context, user, password);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLogged', true);
+    prefs.setBool('isLogged', true);
     isLogged = true;
     isLoading = false;
   }
@@ -58,18 +70,28 @@ abstract class _AppState with Store {
   Future<void> createNotes(String text) async {
     isLoading = true;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var notes = prefs.getString('notes');
+    var noteString = prefs.getString('notes');
 
-    if (notes == null) {
-      var notesJson = [
+    if (noteString == null) {
+      var _notesMap = [
         {'id': 1, 'text': text}
       ];
-      await prefs.setString('notes', jsonEncode(notesJson));
+      String notesEncoded = jsonEncode(_notesMap);
+      Map<String, Object> notesDecoded = jsonDecode(notesEncoded);
+      //Set our observable map for notes
+      notesMap = ObservableMap<String, Object>.of(notesDecoded);
+      //Set our shared preferences Map for notes
+      prefs.setString('notes', notesEncoded);
+      isLoading = false;
     } else {
-      var notesJson = jsonDecode(notes);
-      int id = notesJson.length + 1;
-      notesJson.add({'id': id, 'text': text});
-      await prefs.setString('notes', jsonEncode(notesJson));
+      var notesDecoded = jsonDecode(noteString);
+      int id = notesDecoded.length + 1;
+      notesDecoded.add({'id': id, 'text': text});
+      //Update our observable Map for notes
+      notesMap = ObservableMap<String, Object>.of(notesDecoded);
+      //Update our shared preferences Map for notes
+      await prefs.setString('notes', jsonEncode(notesDecoded));
+      isLoading = false;
     }
   }
 
@@ -77,16 +99,14 @@ abstract class _AppState with Store {
   Future<void> editNote(int id, String newText) async {
     isLoading = true;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var notes = prefs.getString('notes');
+    var noteString = prefs.getString('notes');
 
-    if (notes != null) {
-      var notesJson = jsonDecode(notes);
-
-      int indexToEdit = notesJson.indexWhere((element) => element['id'] == id);
-
-      notesJson[indexToEdit]['text'] = newText;
-
-      await prefs.setString('notes', jsonEncode(notesJson));
+   if (noteString != null) {
+      var notesDecoded = jsonDecode(noteString);
+      int idToEdit = notesDecoded.indexWhere((element) => element['id'] == id);
+      notesDecoded[idToEdit]['text'] = newText;
+      notesMap = ObservableMap<String, Object>.of(notesDecoded);
+      await prefs.setString('notes', jsonEncode(notesDecoded));
     }
 
     isLoading = false;
@@ -96,17 +116,17 @@ abstract class _AppState with Store {
   Future<void> deleteNote(int id) async {
     isLoading = true;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var notes = prefs.getString('notes');
-    if (notes != null) {
-      var notesJson = jsonDecode(notes);
-      int indexToDelete =
-          notesJson.indexWhere((element) => element['id'] == id);
-      notesJson.removeAt(indexToDelete);
-      await prefs.setString('notes', jsonEncode(notesJson));
+    var noteString = prefs.getString('notes');
+    if (noteString != null) {
+      var notesDecoded = jsonDecode(noteString);
+      int idToDelete =
+          notesDecoded.indexWhere((element) => element['id'] == id);
+      notesDecoded.removeAt(idToDelete);
+      notesMap = ObservableMap<String, Object>.of(notesDecoded);
+      await prefs.setString('notes', jsonEncode(notesDecoded));
     }
     isLoading = false;
   }
 }
 
 enum AppScreen { home, note }
-
