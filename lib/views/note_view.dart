@@ -30,11 +30,17 @@ class NoteView extends StatelessWidget {
             backgroundColor: Colors.transparent,
             body:
                 //Note View Elements
-              Center(
+                Center(
               child: Column(
                 children: [
                   const SizedBox(height: 100),
-                 //List of notes
+                  //List of notes inide this container
+                  Container(
+                    height: 280,
+                    width: 280,
+                    color: Colors.white,
+                    child: const NotesList(),
+                  ),
                   const SizedBox(height: 50),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -83,25 +89,30 @@ class NotesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
 
-    return Observer(builder: (context){
+    return Observer(builder: (context) {
       return ListView.builder(
-        itemCount: appState.notesMap.length, 
-        itemBuilder: (context, index) { 
+        itemCount: appState.notesMap.length,
+        itemBuilder: (context, index) {
           final id = appState.notesMap['id'];
-          
+          int intId = id as int;
+          final text = appState.notesMap['text'];
+          String stringText = text.toString();
           return ListTile(
-            title: Text('this is the id: ${id.toString()}'),
+            title: Text('Texto digitado 1 ${intId.toString()}'),
+            subtitle: Text(stringText),
             trailing: Row(
               children: [
-                
                 IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.delete)),
+                IconButton(
+                    onPressed: () {
+                      deleteDialog(context, intId);
+                    },
+                    icon: const Icon(Icons.delete)),
               ],
             ),
           );
-          
-         } ,
-       );
+        },
+      );
     });
   }
 }

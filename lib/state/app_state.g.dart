@@ -109,16 +109,17 @@ mixin _$AppState on _AppState, Store {
       AsyncAction('_AppState.editNote', context: context);
 
   @override
-  Future<void> editNote(int id, String newText) {
-    return _$editNoteAsyncAction.run(() => super.editNote(id, newText));
+  Future<void> editNote({required int id, required String newText}) {
+    return _$editNoteAsyncAction
+        .run(() => super.editNote(id: id, newText: newText));
   }
 
   late final _$deleteNoteAsyncAction =
       AsyncAction('_AppState.deleteNote', context: context);
 
   @override
-  Future<void> deleteNote(int id) {
-    return _$deleteNoteAsyncAction.run(() => super.deleteNote(id));
+  Future<void> deleteNote({required int id}) {
+    return _$deleteNoteAsyncAction.run(() => super.deleteNote(id: id));
   }
 
   @override

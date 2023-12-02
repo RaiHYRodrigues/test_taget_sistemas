@@ -96,7 +96,7 @@ abstract class _AppState with Store {
   }
 
   @action
-  Future<void> editNote(int id, String newText) async {
+  Future<void> editNote({required int id, required String newText}) async {
     isLoading = true;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var noteString = prefs.getString('notes');
@@ -113,7 +113,7 @@ abstract class _AppState with Store {
   }
 
   @action
-  Future<void> deleteNote(int id) async {
+  Future<void> deleteNote({required int id}) async {
     isLoading = true;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var noteString = prefs.getString('notes');
