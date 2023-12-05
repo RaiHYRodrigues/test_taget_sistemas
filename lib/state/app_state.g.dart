@@ -25,22 +25,6 @@ mixin _$AppState on _AppState, Store {
     });
   }
 
-  late final _$isLoggedAtom =
-      Atom(name: '_AppState.isLogged', context: context);
-
-  @override
-  bool get isLogged {
-    _$isLoggedAtom.reportRead();
-    return super.isLogged;
-  }
-
-  @override
-  set isLogged(bool value) {
-    _$isLoggedAtom.reportWrite(value, super.isLogged, () {
-      super.isLogged = value;
-    });
-  }
-
   late final _$isLoadingAtom =
       Atom(name: '_AppState.isLoading', context: context);
 
@@ -85,7 +69,7 @@ mixin _$AppState on _AppState, Store {
       AsyncAction('_AppState.loadNotes', context: context);
 
   @override
-  Future<ObservableMap<String, Object>> loadNotes() {
+  Future<void> loadNotes() {
     return _$loadNotesAsyncAction.run(() => super.loadNotes());
   }
 
@@ -109,9 +93,8 @@ mixin _$AppState on _AppState, Store {
       AsyncAction('_AppState.editNote', context: context);
 
   @override
-  Future<void> editNote({required int id, required String newText}) {
-    return _$editNoteAsyncAction
-        .run(() => super.editNote(id: id, newText: newText));
+  Future<void> editNote(int? id, String? newText) {
+    return _$editNoteAsyncAction.run(() => super.editNote(id, newText));
   }
 
   late final _$deleteNoteAsyncAction =
@@ -126,7 +109,6 @@ mixin _$AppState on _AppState, Store {
   String toString() {
     return '''
 currentScreen: ${currentScreen},
-isLogged: ${isLogged},
 isLoading: ${isLoading},
 notesMap: ${notesMap}
     ''';

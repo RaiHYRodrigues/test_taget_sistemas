@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
 class MockAuthProvider {
-  Future<void> logIn(
+  Future<bool> logIn(
     BuildContext context,
     String user,
     String password,
   ) async {
     if (user.isEmpty || password.isEmpty) {
-      return _authErrorDialog(context, 'Usuário ou Senha não está Preenchido');
+      _authErrorDialog(context, 'Usuário ou Senha não está Preenchido');
+      return false;
     } else if (user.endsWith(' ')) {
-      return _authErrorDialog(context, "Usuário não pode terminar com espaço");
+      _authErrorDialog(context, "Usuário não pode terminar com espaço");
+      return false;
     } else if (password.length < 2) {
-      return _authErrorDialog(context, 'Senha deve ter no mínimo 2 caracteres');
+      _authErrorDialog(context, 'Senha deve ter no mínimo 2 caracteres');
+      return false;
     } else {
-      Future.delayed(const Duration(seconds: 1));
+      return true;
     }
   }
 

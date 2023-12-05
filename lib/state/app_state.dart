@@ -13,16 +13,14 @@ class AppState = _AppState with _$AppState;
 
 abstract class _AppState with Store {
   @observable
-  AppScreen currentScreen = AppScreen.home;
-
-  @observable
-  bool isLogged = false;
+  AppScreen currentScreen = AppScreen.login;
 
   @observable
   bool isLoading = false;
 
   @observable
-  ObservableMap<String, Object> notesMap =  ObservableMap<String, Object>.of({'id': 0, 'text': ''});
+  ObservableMap<String, Object> notesMap =
+      ObservableMap<String, Object>.of({'id': 0, 'text': ''});
 
   @action
   Future<void> initialize() async {
@@ -30,24 +28,21 @@ abstract class _AppState with Store {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool checkLogin = prefs.getBool('isLogged') ?? false;
     if (checkLogin == false) {
-      currentScreen = AppScreen.home;
+      currentScreen = AppScreen.login;
       isLoading = false;
     } else {
       currentScreen = AppScreen.note;
       isLoading = false;
-      isLogged = true;
     }
   }
 
   @action
-  Future<ObservableMap<String, Object>> loadNotes() async {
+  Future<void> loadNotes() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var noteString = prefs.getString('notes');
     if (noteString != null) {
       Map<String, Object> notesDecoded = jsonDecode(noteString);
-      return notesMap = ObservableMap<String, Object>.of(notesDecoded);
-    } else {
-      return notesMap = ObservableMap<String, Object>.of({});
+      notesMap = ObservableMap<String, Object>.of(notesDecoded);
     }
   }
 
@@ -59,11 +54,14 @@ abstract class _AppState with Store {
   ) async {
     isLoading = true;
     MockAuthProvider authProvider = MockAuthProvider();
-    authProvider.logIn(context, user, password);
+    final authStatus = await authProvider.logIn(context, user, password);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isLogged', true);
-    isLogged = true;
-    isLoading = false;
+    if (authStatus) {
+      prefs.setBool('isLogged', true);
+
+      currentScreen = AppScreen.note;
+      isLoading = false;
+    }
   }
 
   @action
@@ -96,20 +94,21 @@ abstract class _AppState with Store {
   }
 
   @action
-  Future<void> editNote({required int id, required String newText}) async {
+  Future<void> editNote(int? id, String? newText) async {
     isLoading = true;
+    currentScreen = AppScreen.edit;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var noteString = prefs.getString('notes');
 
-   if (noteString != null) {
+    if (noteString != null) {
       var notesDecoded = jsonDecode(noteString);
       int idToEdit = notesDecoded.indexWhere((element) => element['id'] == id);
       notesDecoded[idToEdit]['text'] = newText;
       notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      await prefs.setString('notes', jsonEncode(notesDecoded));
+      prefs.setString('notes', jsonEncode(notesDecoded));
+      currentScreen = AppScreen.note;
+      isLoading = false;
     }
-
-    isLoading = false;
   }
 
   @action
@@ -123,10 +122,11 @@ abstract class _AppState with Store {
           notesDecoded.indexWhere((element) => element['id'] == id);
       notesDecoded.removeAt(idToDelete);
       notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      await prefs.setString('notes', jsonEncode(notesDecoded));
+      prefs.setString('notes', jsonEncode(notesDecoded));
+      currentScreen = AppScreen.note;
+      isLoading = false;
     }
-    isLoading = false;
   }
 }
 
-enum AppScreen { home, note }
+enum AppScreen { login, note, edit }

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:provider/provider.dart';
+import 'package:test_target_sistemas/state/app_state.dart';
 
-class EditView extends StatelessWidget {
-  final FocusNode _focusNode = FocusNode();
+class EditView extends HookWidget {
+  
   final int? id;
   final String? text;
-  EditView({super.key, this.id, this.text});
+  const EditView({super.key, this.id, this.text});
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController controller = TextEditingController(text:text);
+    final FocusNode focusNode = FocusNode();
     return Container(
         //Gradient BackGround
         decoration: const BoxDecoration(
@@ -18,7 +23,7 @@ class EditView extends StatelessWidget {
         )),
         child: GestureDetector(
           onTap: () {
-            _focusNode.requestFocus();
+            focusNode.requestFocus();
           },
           child: Scaffold(
             backgroundColor: Colors.transparent,
@@ -46,7 +51,17 @@ class EditView extends StatelessWidget {
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold))),
                             const Divider(),
-                            Text(text ?? 'Agora é rezar'),
+                            TextField(
+                              onSubmitted: (text) {
+                          final text = controller.text;
+                          context.read<AppState>().editNote(id, text);
+                        },
+                              maxLines: null,
+                              expands: true,
+                              keyboardType: TextInputType.multiline,
+                              controller: controller,
+                              
+                            ),
                           ],
                         ),
                       )),

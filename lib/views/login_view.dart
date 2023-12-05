@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
 import 'package:test_target_sistemas/components/auth_form.dart';
@@ -6,12 +7,14 @@ import 'package:test_target_sistemas/components/auth_form.dart';
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 
-class HomeView extends StatelessWidget {
-  HomeView({super.key});
-  final userController = TextEditingController();
-  final passwordController = TextEditingController();
+class LoginView extends HookWidget {
+  const LoginView({Key? key}) : super(key: key);
+
+  
   @override
   Widget build(BuildContext context) {
+    final userController = TextEditingController();
+    final pwdController = TextEditingController();
     return Container(
         //Gradient BackGround
         decoration: const BoxDecoration(
@@ -30,17 +33,16 @@ class HomeView extends StatelessWidget {
               const SizedBox(height: 100),
               Center(
                 child: AuthForm(
-                    user: userController, password: passwordController),
+                    user: userController, password: pwdController),
               ),
               const SizedBox(height: 30),
               // 'Entrar' Button
               ElevatedButton(
                 onPressed: () async {
                   final user = userController.text;
-                  final password = passwordController.text;
-                  
+                  final password = pwdController.text;
                   context.read<AppState>().logIn(
-                        context, 
+                        context,
                         user,
                         password,
                       );
@@ -73,5 +75,3 @@ class HomeView extends StatelessWidget {
         ));
   }
 }
-
-

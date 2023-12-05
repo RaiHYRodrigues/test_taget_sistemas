@@ -1,19 +1,20 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first,
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:test_target_sistemas/views/edit_view.dart';
 
-class NoteView extends StatelessWidget {
-  NoteView({super.key});
-
-  final FocusNode _focusNode = FocusNode();
-  final TextEditingController _controller = TextEditingController();
+class NoteView extends HookWidget {
+  const NoteView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final FocusNode focusNode = FocusNode();
+    final TextEditingController controller = TextEditingController();
     return Container(
         //Gradient BackGround
         decoration: const BoxDecoration(
@@ -24,7 +25,7 @@ class NoteView extends StatelessWidget {
         )),
         child: GestureDetector(
           onTap: () {
-            _focusNode.requestFocus();
+            focusNode.requestFocus();
           },
           child: Scaffold(
             backgroundColor: Colors.transparent,
@@ -45,8 +46,12 @@ class NoteView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 50),
                     child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
+                        onSubmitted: (text) {
+                          final text = controller.text;
+                          context.read<AppState>().createNotes(text);
+                        },
+                        controller: controller,
+                        focusNode: focusNode,
                         autofocus: true,
                         cursorColor: Colors.black,
                         style: const TextStyle(
@@ -93,24 +98,36 @@ class NotesList extends StatelessWidget {
       return ListView.builder(
         itemCount: appState.notesMap.length,
         itemBuilder: (context, index) {
-          final id = appState.notesMap['id'];
-          int intId = id as int;
-          final text = appState.notesMap['text'];
-          String stringText = text.toString();
-          return ListTile(
-            title: Text('Texto digitado 1 ${intId.toString()}'),
-            subtitle: Text(stringText),
-            trailing: Row(
-              children: [
-                IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-                IconButton(
-                    onPressed: () {
-                      deleteDialog(context, intId);
-                    },
-                    icon: const Icon(Icons.delete)),
-              ],
-            ),
-          );
+          final id = appState.notesMap['id'] as dynamic;
+          if (id != 0) {
+            final text = appState.notesMap['text'] as String;
+            return ListTile(
+              title: Text('Texto digitado ${id.toString()}'),
+              subtitle: Text(text),
+              trailing: Row(
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EditView(
+                                      id: id,
+                                      text: text,
+                                    )));
+                      },
+                      icon: const Icon(Icons.edit)),
+                  IconButton(
+                      onPressed: () {
+                        deleteDialog(context, id);
+                      },
+                      icon: const Icon(Icons.delete)),
+                ],
+              ),
+            );
+          } else {
+            return const Text('Nenhum Texto Salvo');
+          }
         },
       );
     });
