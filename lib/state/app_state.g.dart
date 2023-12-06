@@ -9,6 +9,14 @@ part of 'app_state.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$AppState on _AppState, Store {
+  Computed<ObservableList<Note>>? _$sortedNotesComputed;
+
+  @override
+  ObservableList<Note> get sortedNotes => (_$sortedNotesComputed ??=
+          Computed<ObservableList<Note>>(() => super.sortedNotes,
+              name: '_AppState.sortedNotes'))
+      .value;
+
   late final _$currentScreenAtom =
       Atom(name: '_AppState.currentScreen', context: context);
 
@@ -41,19 +49,35 @@ mixin _$AppState on _AppState, Store {
     });
   }
 
-  late final _$notesMapAtom =
-      Atom(name: '_AppState.notesMap', context: context);
+  late final _$isLoggedAtom =
+      Atom(name: '_AppState.isLogged', context: context);
 
   @override
-  ObservableMap<String, Object> get notesMap {
-    _$notesMapAtom.reportRead();
-    return super.notesMap;
+  bool get isLogged {
+    _$isLoggedAtom.reportRead();
+    return super.isLogged;
   }
 
   @override
-  set notesMap(ObservableMap<String, Object> value) {
-    _$notesMapAtom.reportWrite(value, super.notesMap, () {
-      super.notesMap = value;
+  set isLogged(bool value) {
+    _$isLoggedAtom.reportWrite(value, super.isLogged, () {
+      super.isLogged = value;
+    });
+  }
+
+  late final _$obsNoteListAtom =
+      Atom(name: '_AppState.obsNoteList', context: context);
+
+  @override
+  ObservableList<Note> get obsNoteList {
+    _$obsNoteListAtom.reportRead();
+    return super.obsNoteList;
+  }
+
+  @override
+  set obsNoteList(ObservableList<Note> value) {
+    _$obsNoteListAtom.reportWrite(value, super.obsNoteList, () {
+      super.obsNoteList = value;
     });
   }
 
@@ -65,14 +89,6 @@ mixin _$AppState on _AppState, Store {
     return _$initializeAsyncAction.run(() => super.initialize());
   }
 
-  late final _$loadNotesAsyncAction =
-      AsyncAction('_AppState.loadNotes', context: context);
-
-  @override
-  Future<void> loadNotes() {
-    return _$loadNotesAsyncAction.run(() => super.loadNotes());
-  }
-
   late final _$logInAsyncAction =
       AsyncAction('_AppState.logIn', context: context);
 
@@ -81,28 +97,20 @@ mixin _$AppState on _AppState, Store {
     return _$logInAsyncAction.run(() => super.logIn(context, user, password));
   }
 
-  late final _$createNotesAsyncAction =
-      AsyncAction('_AppState.createNotes', context: context);
+  late final _$createNoteAsyncAction =
+      AsyncAction('_AppState.createNote', context: context);
 
   @override
-  Future<void> createNotes(String text) {
-    return _$createNotesAsyncAction.run(() => super.createNotes(text));
-  }
-
-  late final _$editNoteAsyncAction =
-      AsyncAction('_AppState.editNote', context: context);
-
-  @override
-  Future<void> editNote(int? id, String? newText) {
-    return _$editNoteAsyncAction.run(() => super.editNote(id, newText));
+  Future<bool> createNote(String text) {
+    return _$createNoteAsyncAction.run(() => super.createNote(text));
   }
 
   late final _$deleteNoteAsyncAction =
       AsyncAction('_AppState.deleteNote', context: context);
 
   @override
-  Future<void> deleteNote({required int id}) {
-    return _$deleteNoteAsyncAction.run(() => super.deleteNote(id: id));
+  Future<bool> deleteNote(Note note) {
+    return _$deleteNoteAsyncAction.run(() => super.deleteNote(note));
   }
 
   @override
@@ -110,7 +118,9 @@ mixin _$AppState on _AppState, Store {
     return '''
 currentScreen: ${currentScreen},
 isLoading: ${isLoading},
-notesMap: ${notesMap}
+isLogged: ${isLogged},
+obsNoteList: ${obsNoteList},
+sortedNotes: ${sortedNotes}
     ''';
   }
 }

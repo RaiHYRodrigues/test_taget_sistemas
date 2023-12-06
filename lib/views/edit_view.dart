@@ -54,7 +54,8 @@ class EditView extends HookWidget {
                             TextField(
                               onSubmitted: (text) {
                           final text = controller.text;
-                          context.read<AppState>().editNote(id, text);
+                          
+                        
                         },
                               maxLines: null,
                               expands: true,

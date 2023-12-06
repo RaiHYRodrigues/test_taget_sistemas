@@ -1,4 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first,
+// ignore_for_file: public_member_api_docs, sort_constructors_first,, unused_local_variable, prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -6,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:test_target_sistemas/views/edit_view.dart';
 
 class NoteView extends HookWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -39,7 +40,10 @@ class NoteView extends HookWidget {
                   Container(
                     height: 280,
                     width: 280,
-                    color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: const NotesList(),
                   ),
                   const SizedBox(height: 50),
@@ -48,7 +52,7 @@ class NoteView extends HookWidget {
                     child: TextField(
                         onSubmitted: (text) {
                           final text = controller.text;
-                          context.read<AppState>().createNotes(text);
+                          context.read<AppState>().createNote(text);
                         },
                         controller: controller,
                         focusNode: focusNode,
@@ -93,43 +97,44 @@ class NotesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-
-    return Observer(builder: (context) {
-      return ListView.builder(
-        itemCount: appState.notesMap.length,
-        itemBuilder: (context, index) {
-          final id = appState.notesMap['id'] as dynamic;
-          if (id != 0) {
-            final text = appState.notesMap['text'] as String;
-            return ListTile(
-              title: Text('Texto digitado ${id.toString()}'),
-              subtitle: Text(text),
-              trailing: Row(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EditView(
-                                      id: id,
-                                      text: text,
-                                    )));
-                      },
-                      icon: const Icon(Icons.edit)),
-                  IconButton(
-                      onPressed: () {
-                        deleteDialog(context, id);
-                      },
-                      icon: const Icon(Icons.delete)),
-                ],
-              ),
+    return Observer(
+      builder: (context) {
+        return ListView.builder(
+          itemCount: appState.sortedNotes.length,
+          itemBuilder: (context, index) {
+            final note = appState.sortedNotes[index];
+            return Card(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Texto salvo ${note.id}',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          IconButton(
+                              onPressed: () {}, icon: const Icon(Icons.edit)),
+                          IconButton(
+                              onPressed: () {}, icon: const Icon(Icons.delete))
+                        ],
+                      ),
+                    ),
+                    Divider(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                      child: Text(note.text),
+                    )
+                  ]),
             );
-          } else {
-            return const Text('Nenhum Texto Salvo');
-          }
-        },
-      );
-    });
+          },
+        );
+      },
+    );
   }
 }

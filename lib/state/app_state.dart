@@ -1,17 +1,20 @@
 // ignore_for_file: no_leading_underscores_for_local_identifiers, library_private_types_in_public_api
-
 import 'dart:convert';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_target_sistemas/services/mock_auth_provider.dart';
+import 'package:test_target_sistemas/services/auth_service/mock_auth_provider.dart';
+import 'package:test_target_sistemas/services/note_service/note.dart';
 
 part 'app_state.g.dart';
 
 class AppState = _AppState with _$AppState;
 
 abstract class _AppState with Store {
+  late SharedPreferences prefs;
+
   @observable
   AppScreen currentScreen = AppScreen.login;
 
@@ -19,30 +22,33 @@ abstract class _AppState with Store {
   bool isLoading = false;
 
   @observable
-  ObservableMap<String, Object> notesMap =
-      ObservableMap<String, Object>.of({'id': 0, 'text': ''});
+  bool isLogged = false;
+
+  @observable
+  ObservableList<Note> obsNoteList = ObservableList<Note>();
+
+  @computed
+  ObservableList<Note> get sortedNotes =>
+      ObservableList.of(obsNoteList.sorted());
 
   @action
   Future<void> initialize() async {
     isLoading = true;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs = await SharedPreferences.getInstance();
+
+    List<Note>? _notes = await _getNotes(prefs);
+
     final bool checkLogin = prefs.getBool('isLogged') ?? false;
+
     if (checkLogin == false) {
       currentScreen = AppScreen.login;
       isLoading = false;
-    } else {
-      currentScreen = AppScreen.note;
-      isLoading = false;
-    }
-  }
+    } else if (_notes != null) {
+      obsNoteList.addAll(_notes);
 
-  @action
-  Future<void> loadNotes() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var noteString = prefs.getString('notes');
-    if (noteString != null) {
-      Map<String, Object> notesDecoded = jsonDecode(noteString);
-      notesMap = ObservableMap<String, Object>.of(notesDecoded);
+      currentScreen = AppScreen.note;
+
+      isLoading = false;
     }
   }
 
@@ -55,7 +61,7 @@ abstract class _AppState with Store {
     isLoading = true;
     MockAuthProvider authProvider = MockAuthProvider();
     final authStatus = await authProvider.logIn(context, user, password);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (authStatus) {
       prefs.setBool('isLogged', true);
 
@@ -65,68 +71,64 @@ abstract class _AppState with Store {
   }
 
   @action
-  Future<void> createNotes(String text) async {
+  Future<bool> createNote(String text) async {
     isLoading = true;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var noteString = prefs.getString('notes');
 
-    if (noteString == null) {
-      var _notesMap = [
-        {'id': 1, 'text': text}
-      ];
-      String notesEncoded = jsonEncode(_notesMap);
-      Map<String, Object> notesDecoded = jsonDecode(notesEncoded);
-      //Set our observable map for notes
-      notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      //Set our shared preferences Map for notes
-      prefs.setString('notes', notesEncoded);
-      isLoading = false;
-    } else {
-      var notesDecoded = jsonDecode(noteString);
-      int id = notesDecoded.length + 1;
-      notesDecoded.add({'id': id, 'text': text});
-      //Update our observable Map for notes
-      notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      //Update our shared preferences Map for notes
-      await prefs.setString('notes', jsonEncode(notesDecoded));
-      isLoading = false;
-    }
+    List<Note> _noteList = await _getNotes(prefs) ?? [];
+    final String creationDate = DateTime.now().toString();
+    final id = obsNoteList.length + 1;
+    List<String> _noteStringList = prefs.getStringList('notes') ?? [];
+
+    final note = Note(
+      id: id,
+      creationDate: creationDate,
+      text: text,
+    );
+    //add in shared preferences
+    _noteList.add(note);
+    _noteStringList.add(jsonEncode(note.toJson()));
+    prefs.setStringList('notes', _noteStringList);
+    
+    //add in the observable
+    obsNoteList.add(note);
+    
+    isLoading = false;
+    return true;
   }
 
   @action
-  Future<void> editNote(int? id, String? newText) async {
+  Future<bool> deleteNote(Note note) async {
     isLoading = true;
-    currentScreen = AppScreen.edit;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var noteString = prefs.getString('notes');
 
-    if (noteString != null) {
-      var notesDecoded = jsonDecode(noteString);
-      int idToEdit = notesDecoded.indexWhere((element) => element['id'] == id);
-      notesDecoded[idToEdit]['text'] = newText;
-      notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      prefs.setString('notes', jsonEncode(notesDecoded));
-      currentScreen = AppScreen.note;
-      isLoading = false;
-    }
-  }
+    //delete from Shared preferences
 
-  @action
-  Future<void> deleteNote({required int id}) async {
-    isLoading = true;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var noteString = prefs.getString('notes');
-    if (noteString != null) {
-      var notesDecoded = jsonDecode(noteString);
-      int idToDelete =
-          notesDecoded.indexWhere((element) => element['id'] == id);
-      notesDecoded.removeAt(idToDelete);
-      notesMap = ObservableMap<String, Object>.of(notesDecoded);
-      prefs.setString('notes', jsonEncode(notesDecoded));
-      currentScreen = AppScreen.note;
-      isLoading = false;
-    }
+    // delete locally
+    obsNoteList.removeWhere((element) => element.id == note.id);
+    isLoading = false;
+    return true;
   }
+}
+
+extension Sorted on List<Note> {
+  List<Note> sorted() => [...this]..sort((lhs, rhs) {
+      return lhs.id.compareTo(rhs.id);
+    });
+}
+
+Future<List<Note>?> _getNotes(SharedPreferences _prefs) async {
+  final List<String> noteStringList = _prefs.getStringList('notes') ?? [];
+  List<Note> noteList = [];
+
+  if (noteStringList.isNotEmpty) {
+    for (String noteString in noteStringList) {
+      Map<String, dynamic> noteMap = jsonDecode(noteString);
+      Note note = Note.fromJson(noteMap);
+      noteList.add(note);
+    }
+
+    return noteList;
+  }
+  return null;
 }
 
 enum AppScreen { login, note, edit }

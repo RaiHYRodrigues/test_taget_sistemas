@@ -18,7 +18,7 @@ Future<void> deleteDialog(BuildContext context, int id) {
                 },
                 child: const Text('Cancelar')),
             TextButton(onPressed: () {
-            context.read<AppState>().deleteNote(id: id);
+            
             }, child: const Text('Sim'))
           ],
         );
