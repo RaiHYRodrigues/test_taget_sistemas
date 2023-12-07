@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<void> deleteDialog(BuildContext context, int id) {
-  
+Future<void> deleteDialog(BuildContext context, AppState appState, int id) {
   return showDialog(
       context: context,
       builder: (context) {
@@ -17,14 +16,16 @@ Future<void> deleteDialog(BuildContext context, int id) {
                   Navigator.of(context).pop();
                 },
                 child: const Text('Cancelar')),
-            TextButton(onPressed: () {
-            
-            }, child: const Text('Sim'))
+            TextButton(
+                onPressed: () {
+                  appState.deleteNote(id);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Sim'))
           ],
         );
       });
 }
-
 
 Future<void> launchInBrowser(Uri url) async {
   if (!await launchUrl(

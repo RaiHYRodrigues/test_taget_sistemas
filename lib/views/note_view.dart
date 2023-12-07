@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first,, unused_local_variable, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -29,6 +30,7 @@ class NoteView extends HookWidget {
             focusNode.requestFocus();
           },
           child: Scaffold(
+            
             backgroundColor: Colors.transparent,
             body:
                 //Note View Elements
@@ -105,32 +107,35 @@ class NotesList extends StatelessWidget {
             final note = appState.sortedNotes[index];
             return Card(
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Texto salvo ${note.id}',
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          IconButton(
-                              onPressed: () {}, icon: const Icon(Icons.edit)),
-                          IconButton(
-                              onPressed: () {}, icon: const Icon(Icons.delete))
-                        ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Container(),
                       ),
+                      IconButton(
+                          onPressed: () {}, icon: const Icon(Icons.edit)),
+                      IconButton(
+                          onPressed: () {
+                            deleteDialog(context, appState, note.id);
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ))
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                    child: Text(
+                      note.text,
+                      style: TextStyle(fontSize: 14),
                     ),
-                    Divider(),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-                      child: Text(note.text),
-                    )
-                  ]),
+                  ),
+                ],
+              ),
             );
           },
         );

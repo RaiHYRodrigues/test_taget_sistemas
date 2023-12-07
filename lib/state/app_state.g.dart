@@ -105,14 +105,6 @@ mixin _$AppState on _AppState, Store {
     return _$createNoteAsyncAction.run(() => super.createNote(text));
   }
 
-  late final _$deleteNoteAsyncAction =
-      AsyncAction('_AppState.deleteNote', context: context);
-
-  @override
-  Future<bool> deleteNote(Note note) {
-    return _$deleteNoteAsyncAction.run(() => super.deleteNote(note));
-  }
-
   @override
   String toString() {
     return '''

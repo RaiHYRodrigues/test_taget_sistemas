@@ -74,10 +74,15 @@ abstract class _AppState with Store {
   Future<bool> createNote(String text) async {
     isLoading = true;
 
-    List<Note> _noteList = await _getNotes(prefs) ?? [];
     final String creationDate = DateTime.now().toString();
     final id = obsNoteList.length + 1;
     List<String> _noteStringList = prefs.getStringList('notes') ?? [];
+    bool idExists = obsNoteList.any((note) => false == id);
+
+    while (idExists) {
+      id + 1;
+      idExists = obsNoteList.any((note) => note.id == id);
+    }
 
     final note = Note(
       id: id,
@@ -85,33 +90,52 @@ abstract class _AppState with Store {
       text: text,
     );
     //add in shared preferences
-    _noteList.add(note);
     _noteStringList.add(jsonEncode(note.toJson()));
     prefs.setStringList('notes', _noteStringList);
-    
     //add in the observable
     obsNoteList.add(note);
-    
+
     isLoading = false;
     return true;
   }
+  Future<bool> deleteNote(int id) async {
+  isLoading = true;
 
-  @action
-  Future<bool> deleteNote(Note note) async {
-    isLoading = true;
+  List<String> _noteStringList = prefs.getStringList('notes') ?? [];
+  List<Note> notes = [];
 
-    //delete from Shared preferences
+  for (String noteString in _noteStringList) {
+    Note note = Note.fromJson(jsonDecode(noteString));
+    notes.add(note);
+  }
 
-    // delete locally
-    obsNoteList.removeWhere((element) => element.id == note.id);
+  int indexToDelete = notes.indexWhere((note) => note.id == id);
+
+  if (indexToDelete != -1) {
+    notes.removeAt(indexToDelete);
+
+    // Update SharedPreferences
+    _noteStringList = notes.map((note) => jsonEncode(note.toJson())).toList();
+    prefs.setStringList('notes', _noteStringList);
+
+    // Update the observable list
+    obsNoteList.removeWhere((note) => note.id == id);
+
     isLoading = false;
     return true;
+  } else {
+    isLoading = false;
+    return false; 
   }
+}
+ 
 }
 
 extension Sorted on List<Note> {
   List<Note> sorted() => [...this]..sort((lhs, rhs) {
-      return lhs.id.compareTo(rhs.id);
+      DateTime lhsDate = DateTime.parse(lhs.creationDate);
+      DateTime rhsDate = DateTime.parse(rhs.creationDate);
+      return lhsDate.compareTo(rhsDate);
     });
 }
 
@@ -129,6 +153,13 @@ Future<List<Note>?> _getNotes(SharedPreferences _prefs) async {
     return noteList;
   }
   return null;
+}
+
+Future<void> _setNotes(List<Note> noteList, SharedPreferences _prefs) async {
+  List<String> noteStringlist = [];
+  for (Note note in noteList) {
+    noteStringlist.add(jsonEncode(note.toJson()));
+  }
 }
 
 enum AppScreen { login, note, edit }
