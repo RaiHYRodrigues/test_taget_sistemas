@@ -33,6 +33,38 @@ mixin _$AppState on _AppState, Store {
     });
   }
 
+  late final _$editedTextAtom =
+      Atom(name: '_AppState.editedText', context: context);
+
+  @override
+  String get editedText {
+    _$editedTextAtom.reportRead();
+    return super.editedText;
+  }
+
+  @override
+  set editedText(String value) {
+    _$editedTextAtom.reportWrite(value, super.editedText, () {
+      super.editedText = value;
+    });
+  }
+
+  late final _$idToEditAtom =
+      Atom(name: '_AppState.idToEdit', context: context);
+
+  @override
+  int get idToEdit {
+    _$idToEditAtom.reportRead();
+    return super.idToEdit;
+  }
+
+  @override
+  set idToEdit(int value) {
+    _$idToEditAtom.reportWrite(value, super.idToEdit, () {
+      super.idToEdit = value;
+    });
+  }
+
   late final _$isLoadingAtom =
       Atom(name: '_AppState.isLoading', context: context);
 
@@ -105,10 +137,28 @@ mixin _$AppState on _AppState, Store {
     return _$createNoteAsyncAction.run(() => super.createNote(text));
   }
 
+  late final _$deleteNoteAsyncAction =
+      AsyncAction('_AppState.deleteNote', context: context);
+
+  @override
+  Future<bool> deleteNote(int id) {
+    return _$deleteNoteAsyncAction.run(() => super.deleteNote(id));
+  }
+
+  late final _$editNoteAsyncAction =
+      AsyncAction('_AppState.editNote', context: context);
+
+  @override
+  Future<bool> editNote(int id, String newText) {
+    return _$editNoteAsyncAction.run(() => super.editNote(id, newText));
+  }
+
   @override
   String toString() {
     return '''
 currentScreen: ${currentScreen},
+editedText: ${editedText},
+idToEdit: ${idToEdit},
 isLoading: ${isLoading},
 isLogged: ${isLogged},
 obsNoteList: ${obsNoteList},

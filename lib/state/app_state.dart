@@ -19,6 +19,12 @@ abstract class _AppState with Store {
   AppScreen currentScreen = AppScreen.login;
 
   @observable
+  String editedText = '';
+
+  @observable
+  int idToEdit = -1;
+
+  @observable
   bool isLoading = false;
 
   @observable
@@ -76,7 +82,7 @@ abstract class _AppState with Store {
 
     final String creationDate = DateTime.now().toString();
     final id = obsNoteList.length + 1;
-    List<String> _noteStringList = prefs.getStringList('notes') ?? [];
+    List<String> noteStringList = prefs.getStringList('notes') ?? [];
     bool idExists = obsNoteList.any((note) => false == id);
 
     while (idExists) {
@@ -90,45 +96,89 @@ abstract class _AppState with Store {
       text: text,
     );
     //add in shared preferences
-    _noteStringList.add(jsonEncode(note.toJson()));
-    prefs.setStringList('notes', _noteStringList);
+    noteStringList.add(jsonEncode(note.toJson()));
+    prefs.setStringList('notes', noteStringList);
     //add in the observable
     obsNoteList.add(note);
 
     isLoading = false;
     return true;
   }
+
+  @action
   Future<bool> deleteNote(int id) async {
-  isLoading = true;
+    isLoading = true;
 
-  List<String> _noteStringList = prefs.getStringList('notes') ?? [];
-  List<Note> notes = [];
+    List<String> noteStringList = prefs.getStringList('notes') ?? [];
+    List<Note> notes = [];
 
-  for (String noteString in _noteStringList) {
-    Note note = Note.fromJson(jsonDecode(noteString));
-    notes.add(note);
+    for (String noteString in noteStringList) {
+      Note note = Note.fromJson(jsonDecode(noteString));
+      notes.add(note);
+    }
+
+    int indexToDelete = notes.indexWhere((note) => note.id == id);
+
+    if (indexToDelete != -1) {
+      notes.removeAt(indexToDelete);
+
+      // Update SharedPreferences
+      noteStringList = notes.map((note) => jsonEncode(note.toJson())).toList();
+      prefs.setStringList('notes', noteStringList);
+
+      // Update the observable list
+      obsNoteList.removeWhere((note) => note.id == id);
+
+      isLoading = false;
+      return true;
+    } else {
+      isLoading = false;
+      return false;
+    }
   }
 
-  int indexToDelete = notes.indexWhere((note) => note.id == id);
+  @action
+  Future<bool> editNote(
+    int id,
+    String newText,
+  ) async {
+    isLoading = true;
 
-  if (indexToDelete != -1) {
-    notes.removeAt(indexToDelete);
+    List<String> noteStringList = prefs.getStringList('notes') ?? [];
+    List<Note> notes = [];
 
-    // Update SharedPreferences
-    _noteStringList = notes.map((note) => jsonEncode(note.toJson())).toList();
-    prefs.setStringList('notes', _noteStringList);
+    for (String noteString in noteStringList) {
+      Note note = Note.fromJson(jsonDecode(noteString));
+      notes.add(note);
+    }
 
-    // Update the observable list
-    obsNoteList.removeWhere((note) => note.id == id);
+    int indexToEdit = notes.indexWhere((note) => note.id == id);
 
-    isLoading = false;
-    return true;
-  } else {
-    isLoading = false;
-    return false; 
+    if (indexToEdit != -1) {
+      // Update the text
+      notes[indexToEdit].text = newText; 
+      // Update SharedPreferences
+      noteStringList = notes.map((note) => jsonEncode(note.toJson())).toList();
+      prefs.setStringList('notes', noteStringList);
+
+      // Update the observable list
+
+      obsNoteList[indexToEdit].text = newText;
+      currentScreen = AppScreen.note;
+      isLoading = false;
+      return true;
+    } else {
+      isLoading = false;
+      return false;
+    }
   }
-}
- 
+
+  Future<void> goToEdit(int id, String text) async {
+    idToEdit = id;
+    editedText = text;
+
+    currentScreen = AppScreen.edit;
+  }
 }
 
 extension Sorted on List<Note> {
@@ -155,11 +205,8 @@ Future<List<Note>?> _getNotes(SharedPreferences _prefs) async {
   return null;
 }
 
-Future<void> _setNotes(List<Note> noteList, SharedPreferences _prefs) async {
-  List<String> noteStringlist = [];
-  for (Note note in noteList) {
-    noteStringlist.add(jsonEncode(note.toJson()));
-  }
+enum AppScreen {
+  login,
+  note,
+  edit,
 }
-
-enum AppScreen { login, note, edit }

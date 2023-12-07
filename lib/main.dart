@@ -20,27 +20,31 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.read<AppState>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ReactionBuilder(
         builder: (context) {
           return autorun((_) {
-            final isLoading = context.read<AppState>().isLoading;
+            final isLoading = appState.isLoading;
 
             if (isLoading) {
               const LoadingView();
-            } 
+            }
           });
         },
         child: Observer(
           builder: (context) {
-            switch (context.read<AppState>().currentScreen) {
+            switch (appState.currentScreen) {
               case AppScreen.login:
                 return const LoginView();
               case AppScreen.note:
                 return const NoteView();
               case AppScreen.edit:
-                return const EditView();
+                return EditView(
+                  id: appState.idToEdit,
+                  text: appState.editedText,
+                );
             }
           },
         ),

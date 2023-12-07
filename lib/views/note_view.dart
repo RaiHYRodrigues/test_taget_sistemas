@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:test_target_sistemas/views/edit_view.dart';
 
 class NoteView extends HookWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -30,14 +31,14 @@ class NoteView extends HookWidget {
             focusNode.requestFocus();
           },
           child: Scaffold(
-            
             backgroundColor: Colors.transparent,
             body:
                 //Note View Elements
                 Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 100),
+                  Expanded(child: const SizedBox()),
                   //List of notes inide this container
                   Container(
                     height: 280,
@@ -116,7 +117,13 @@ class NotesList extends StatelessWidget {
                         child: Container(),
                       ),
                       IconButton(
-                          onPressed: () {}, icon: const Icon(Icons.edit)),
+                          onPressed: () {
+                            appState.goToEdit(
+                              note.id,
+                              note.text,
+                            );
+                          },
+                          icon: const Icon(Icons.edit)),
                       IconButton(
                           onPressed: () {
                             deleteDialog(context, appState, note.id);

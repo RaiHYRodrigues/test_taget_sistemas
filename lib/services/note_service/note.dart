@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class Note {
   final int id;
-  final String text;
+  String text;
   final String creationDate;
 
   Note({
