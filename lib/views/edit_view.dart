@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +11,7 @@ class EditView extends HookWidget {
   final String text;
 
   const EditView({
+    super.key,
     required this.id,
     required this.text,
   });
@@ -38,7 +38,7 @@ class EditView extends HookWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Expanded(child: const SizedBox()),
+                    const Expanded(child: SizedBox()),
                     Container(
                       height: 280,
                       width: 280,
@@ -47,13 +47,12 @@ class EditView extends HookWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: TextField(
-                        
                         controller: controller,
                         focusNode: focusNode,
                         autofocus: true,
                         cursorColor: Colors.black,
                         maxLines: null,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(4),
                         ),
@@ -65,7 +64,6 @@ class EditView extends HookWidget {
                     ElevatedButton(
                       onPressed: () async {
                         context.read<AppState>().editNote(id, controller.text);
-                        
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -81,7 +79,7 @@ class EditView extends HookWidget {
                         ),
                       ),
                     ),
-                    Expanded(child: const SizedBox()),
+                    const Expanded(child: SizedBox()),
                   ],
                 ),
               )),

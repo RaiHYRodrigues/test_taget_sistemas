@@ -1,15 +1,12 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first,, unused_local_variable, prefer_const_constructors, prefer_const_literals_to_create_immutables
-
-import 'dart:convert';
-import 'dart:math';
-
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+
 import 'package:provider/provider.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:test_target_sistemas/views/edit_view.dart';
 
 class NoteView extends HookWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -38,7 +35,7 @@ class NoteView extends HookWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Expanded(child: const SizedBox()),
+                  const Expanded(child: SizedBox()),
                   //List of notes inide this container
                   Container(
                     height: 280,
@@ -55,7 +52,12 @@ class NoteView extends HookWidget {
                     child: TextField(
                         onSubmitted: (text) {
                           final text = controller.text;
-                          context.read<AppState>().createNote(text);
+                          final checkedText = text.trim();
+                          if (checkedText.isNotEmpty) {
+                            context.read<AppState>().createNote(text);
+                          } else {
+                            notFilledDialog(context);
+                          }
                         },
                         controller: controller,
                         focusNode: focusNode,
@@ -138,7 +140,7 @@ class NotesList extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
                     child: Text(
                       note.text,
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 ],

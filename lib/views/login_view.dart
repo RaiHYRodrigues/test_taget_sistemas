@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
 import 'package:test_target_sistemas/components/auth_form.dart';
-
 import 'package:test_target_sistemas/state/app_state.dart';
 import 'package:test_target_sistemas/utilities.dart';
 
 class LoginView extends HookWidget {
   const LoginView({Key? key}) : super(key: key);
 
-  
   @override
   Widget build(BuildContext context) {
     final userController = TextEditingController();
@@ -32,8 +31,7 @@ class LoginView extends HookWidget {
             children: [
               const SizedBox(height: 100),
               Center(
-                child: AuthForm(
-                    user: userController, password: pwdController),
+                child: AuthForm(user: userController, password: pwdController),
               ),
               const SizedBox(height: 30),
               // 'Entrar' Button

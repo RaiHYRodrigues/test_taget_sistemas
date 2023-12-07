@@ -27,6 +27,23 @@ Future<void> deleteDialog(BuildContext context, AppState appState, int id) {
       });
 }
 
+Future<void> notFilledDialog(BuildContext context) {
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Não Preenchido!', style: TextStyle(fontSize: 16)),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Ok!')),
+          ],
+        );
+      });
+}
+
 Future<void> launchInBrowser(Uri url) async {
   if (!await launchUrl(
     url,
